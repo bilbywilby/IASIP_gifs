@@ -567,4 +567,160 @@ init();
 
 </script>
 </body>
-</html>
+</html>    function makeCard(entry) {
+        const file = entry.filename;
+        const url = formatPublicUrl(file);
+        
+        const card = document.createElement('article');
+        card.className = 'card gif-card';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'article');
+        card.setAttribute('aria-label', `${entry.description || file}. Click to copy URL.`);
+        card.dataset.tags = (entry.tags || []).join(' ');
+
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'thumb-wrap';
+
+        // --- Video/GIF Container (Performance Focus) ---
+        if (entry.video_mp4 || entry.video_webm) {
+            const video = document.createElement('video');
+            video.className = 'thumb';
+            video.preload = 'none'; // Essential for lazy loading
+            video.autoplay = true;
+            video.loop = true;
+            video.muted = true;
+            video.playsInline = true;
+            
+            // Set data attributes for IntersectionObserver to handle the real loading
+            video.dataset.gifSrc = url; 
+            video.dataset.videoMp4 = entry.video_mp4 ? formatPublicUrl(entry.video_mp4) : '';
+            video.dataset.videoWebm = entry.video_webm ? formatPublicUrl(entry.video_webm) : '';
+            
+            // Placeholder: Use a 1x1 image until Observer loads it
+            video.poster = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+            video.classList.add('loading'); // Start in loading state
+
+            imgWrap.appendChild(video);
+        } else {
+            // Fallback for entries missing video paths (should be temporary)
+            const img = document.createElement('img');
+            img.className = 'thumb loading';
+            img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+            img.dataset.gifSrc = url;
+            img.alt = entry.description || file;
+            img.loading = 'lazy';
+            imgWrap.appendChild(img);
+        }
+        
+        // ... (rest of the card setup for title, description, tags, and actions) ...
+        
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = file;
+
+        const desc = document.createElement('div');
+        desc.className = 'desc';
+        desc.textContent = entry.description || '';
+        
+        const tagsWrap = document.createElement('div');
+        tagsWrap.className = 'tags';
+        (entry.tags || []).slice(0, 6).forEach(t => {
+            const s = document.createElement('span');
+            s.className = 'tag';
+            s.textContent = t;
+            tagsWrap.appendChild(s);
+        });
+
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = 'Copy URL';
+        copyBtn.className = 'action-btn copy-btn';
+        copyBtn.onclick = (e) => {
+            e.stopPropagation();
+            copyUrlToClipboard(url, copyBtn);
+        };
+
+        const dl = document.createElement('a');
+        dl.textContent = 'Download';
+        dl.href = url;
+        dl.setAttribute('download', file);
+        dl.className = 'download-link action-btn';
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        actions.append(copyBtn, dl);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.append(actions);
+
+        const infoWrap = document.createElement('div');
+        infoWrap.append(title, desc);
+
+        card.append(imgWrap, infoWrap, tagsWrap, meta);
+
+        card.addEventListener('click', () => {
+            copyUrlToClipboard(url, copyBtn);
+        });
+
+        return card;
+    }
+    
+    // --- Update Intersection Observer Logic (Setup Lazy Loading) ---
+    // The previous lazyObserver needs to be updated to handle the new <video> element
+    
+    const lazyObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const element = entry.target; // Can be <img> or <video>
+
+                if (element.tagName === 'VIDEO') {
+                    // Create <source> elements for video formats
+                    const mp4Url = element.dataset.videoMp4;
+                    const webmUrl = element.dataset.videoWebm;
+                    const gifUrl = element.dataset.gifSrc;
+
+                    if (webmUrl) {
+                        const sourceWebm = document.createElement('source');
+                        sourceWebm.src = webmUrl;
+                        sourceWebm.type = 'video/webm';
+                        element.appendChild(sourceWebm);
+                    }
+                    if (mp4Url) {
+                        const sourceMp4 = document.createElement('source');
+                        sourceMp4.src = mp4Url;
+                        sourceMp4.type = 'video/mp4';
+                        element.appendChild(sourceMp4);
+                    }
+                    
+                    // Fallback to GIF for older browsers (or if sources fail)
+                    if (gifUrl) {
+                        const imgFallback = document.createElement('img');
+                        imgFallback.src = gifUrl;
+                        imgFallback.alt = element.alt;
+                        // Insert the GIF fallback inside the video element
+                        element.appendChild(imgFallback); 
+                    }
+                    
+                    // Trigger load and remove loading state
+                    element.load(); 
+                    element.onloadeddata = () => { element.classList.remove('loading'); };
+                    
+                } else if (element.tagName === 'IMG' && element.dataset.gifSrc) {
+                    // Standard GIF lazy load for fallback entries
+                    element.src = element.dataset.gifSrc;
+                    element.onload = () => { element.classList.remove('loading'); };
+                    element.removeAttribute('data-gif-src');
+                }
+                
+                observer.unobserve(element);
+            }
+        });
+    }, { rootMargin: '200px 0px' });
+
+    function setupLazyLoading() {
+        // Observe both the new <video> elements and old <img> elements
+        document.querySelectorAll('.grid .thumb').forEach(el => {
+            lazyObserver.observe(el);
+        });
+    }
+

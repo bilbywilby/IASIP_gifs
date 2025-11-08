@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IASIP GIF Contributor Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font */
+        body { font-family: 'Inter', sans-serif; background-color: #f7f7f7; }
+        .card { background-color: #ffffff; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .btn-primary {
+            background-color: #3b82f6; /* Blue 500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: #2563eb; } /* Blue 600 */
+        .input-style {
+            border: 1px solid #d1d5db; /* Gray 300 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .input-style:focus { border-color: #3b82f6; outline: none; }
+        .result-code {
+            background-color: #e5e7eb; /* Gray 200 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            white-space: pre-wrap;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        /* Custom alert box styling */
+        .message-box {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease-in-out;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.success { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .message-box.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    </style>
+    <script>
+        // Global variables for Firebase setup (required by Canvas environment)
+        const __app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        /**
+         * Custom Message Box (Replaces alert())
+         */
+        function showMessage(message, type = 'success') {
+            const container = document.getElementById('message-container');
+            if (!container) return;
+
+            const box = document.createElement('div');
+            box.textContent = message;
+            box.className = `message-box ${type}`;
+
+            container.appendChild(box);
+            // Show transition
+            setTimeout(() => box.classList.add('show'), 10);
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                box.classList.remove('show');
+                // Remove from DOM after transition
+                box.addEventListener('transitionend', () => box.remove());
+            }, 5000);
+        }
+
+        /**
+         * Helper function to sanitize a string for use as a filename
+         */
+        function sanitizeFilename(text) {
+            if (!text) return 'untitled';
+            // Convert to lowercase, replace spaces with hyphens, remove non-word characters
+            return text.toLowerCase()
+                       .replace(/\s+/g, '-')
+                       .replace(/[^\w-]/g, '');
+        }
+
+        /**
+         * Main function to handle optimization and JSON generation
+         */
+        async function processGif() {
+            const urlInput = document.getElementById('gif-url').value.trim();
+            const descriptionInput = document.getElementById('description').value.trim();
+            const charactersInput = document.getElementById('characters').value.trim();
+            const episodeInput = document.getElementById('episode').value.trim();
+            const tagsInput = document.getElementById('tags').value.trim();
+
+            const statusDiv = document.getElementById('status-message');
+            const resultDiv = document.getElementById('result-area');
+            const previewImg = document.getElementById('gif-preview');
+
+            statusDiv.textContent = '';
+            resultDiv.classList.add('hidden');
+            previewImg.src = '';
+            previewImg.classList.add('hidden');
+
+            if (!urlInput || !descriptionInput) {
+                showMessage("The GIF URL and Description fields are mandatory!", 'error');
+                return;
+            }
+
+            statusDiv.textContent = 'Fetching and preparing GIF... (This might require a CORS proxy)...';
+
+            // --- 1. Fetch the GIF Data ---
+            try {
+                // NOTE ON CORS: Browsers block direct fetching of images from external sites 
+                // to prevent cross-origin resource sharing (CORS) issues. 
+                // In a real application, you would need a CORS proxy server 
+                // (like 'https://cors-anywhere.herokuapp.com/' or a custom backend) 
+                // prefixed to the URL. For local testing, this might fail unless the GIF is hosted on a friendly server.
+
+                const response = await fetch(urlInput);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Get the image blob
+                const imageBlob = await response.blob();
+                if (!imageBlob.type.includes('image/gif')) {
+                    showMessage("Error: The URL does not appear to point to a GIF file.", 'error');
+                    statusDiv.textContent = '';
+                    return;
+                }
+
+                // Create a temporary URL for the preview and download
+                const tempUrl = URL.createObjectURL(imageBlob);
+
+                // --- 2. Generate Filename and Metadata ---
+                const sanitizedDescription = sanitizeFilename(descriptionInput).substring(0, 40);
+                const filename = `${sanitizedDescription}.gif`;
+                
+                const jsonEntry = {
+                    filename: filename,
+                    description: descriptionInput,
+                    characters: charactersInput.split(',').map(s => s.trim()).filter(s => s.length > 0),
+                    tags: tagsInput.split(',').map(s => s.trim()).filter(s => s.length > 0),
+                    episode: episodeInput,
+                };
+                
+                const jsonText = JSON.stringify(jsonEntry, null, 2);
+
+                // --- 3. Update UI and Provide Download Link ---
+                
+                // Display the preview
+                previewImg.src = tempUrl;
+                previewImg.classList.remove('hidden');
+                
+                // Set up the download link for the optimized/fetched GIF
+                const downloadLink = document.getElementById('download-gif');
+                downloadLink.href = tempUrl;
+                downloadLink.download = filename;
+                downloadLink.textContent = `Download Optimized GIF: ${filename}`;
+                
+                // Display the JSON snippet
+                document.getElementById('json-output').textContent = jsonText;
+
+                // Show the results area
+                resultDiv.classList.remove('hidden');
+                statusDiv.textContent = 'Processing Complete!';
+                showMessage("GIF processed and ready for manual contribution!", 'success');
+
+            } catch (e) {
+                console.error("Processing Error:", e);
+                statusDiv.textContent = 'Failed to process GIF. Check console for details (often a CORS issue).';
+                showMessage("Failed to fetch GIF. Try using a CORS proxy or a directly linkable image.", 'error');
+            }
+        }
+
+        /**
+         * Copies the JSON content to the clipboard
+         */
+        function copyJson() {
+            const jsonText = document.getElementById('json-output').textContent;
+            if (!jsonText) {
+                showMessage("No JSON generated yet!", 'error');
+                return;
+            }
+            
+            // Use execCommand for better compatibility in iframe environments
+            const textArea = document.createElement('textarea');
+            textArea.value = jsonText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showMessage("JSON Entry copied to clipboard!", 'success');
+            } catch (err) {
+                showMessage("Failed to copy JSON. Please copy manually.", 'error');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    </script>
+</head>
+<body class="p-4 sm:p-8 min-h-screen">
+
+    <div id="message-container"></div>
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-yellow-600">
+                <span class="text-gray-900">☀️</span> IASIP Contributor Tool
+            </h1>
+            <p class="text-lg text-gray-600 mt-2">Generate and optimize GIFs and their metadata for the `IASIP_gifs` repository.</p>
+        </header>
+
+        <!-- INPUT FORM CARD -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">1. Source & Metadata</h2>
+            
+            <div class="mb-4">
+                <label for="gif-url" class="block text-sm font-medium text-gray-700 mb-1">Source GIF URL (e.g., from Giphy, Imgur)</label>
+                <input type="url" id="gif-url" placeholder="https://i.imgur.com/example.gif" class="input-style">
+                <p class="text-xs text-gray-500 mt-1">If fetching fails, the host may require a CORS proxy (e.g., prefix URL with `https://cors-anywhere.herokuapp.com/`).</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="mb-4 md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description (Be concise, this is used for the filename)</label>
+                    <input type="text" id="description" placeholder="Charlie trying to solve the Pepe Silvia conspiracy" class="input-style">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="characters" class="block text-sm font-medium text-gray-700 mb-1">Characters (Comma separated, e.g., Dee, Mac)</label>
+                    <input type="text" id="characters" placeholder="Charlie, Mac" class="input-style">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="episode" class="block text-sm font-medium text-gray-700 mb-1">Episode (e.g., S05E10 - The D.E.N.N.I.S. System)</label>
+                    <input type="text" id="episode" placeholder="S04E10 - Sweet Dee Has a Heart Attack" class="input-style">
+                </div>
+                
+                <div class="mb-4 md:col-span-2">
+                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags (Comma separated, e.g., conspiracy, mail, nervous)</label>
+                    <input type="text" id="tags" placeholder="conspiracy, mail, nervous, work" class="input-style">
+                </div>
+            </div>
+
+            <button onclick="processGif()" class="w-full btn-primary mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+                </svg>
+                Process & Generate Contribution
+            </button>
+        </div>
+
+        <!-- RESULT CARD -->
+        <div id="result-area" class="card p-6 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. Contribution Files</h2>
+            
+            <p id="status-message" class="text-md font-medium text-green-700 mb-4"></p>
+            
+            <p class="text-sm text-gray-600 mb-4 font-bold">
+                Follow these steps to contribute:
+                <ol class="list-decimal list-inside text-gray-700 font-normal mt-2 space-y-1">
+                    <li>**Download** the GIF using the link below. Place it in your local `gifs/` folder.</li>
+                    <li>**Copy** the JSON snippet below. Paste it into your local `gifs/index.json` file.</li>
+                    <li>Commit and push your changes!</li>
+                </ol>
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- GIF Download -->
+                <div>
+                    <h3 class="text-xl font-medium mb-2 text-gray-800">GIF File</h3>
+                    <div class="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                        <img id="gif-preview" class="max-w-full h-auto max-h-48 rounded-lg mb-4 hidden" alt="GIF Preview">
+                        <a id="download-gif" class="btn-primary no-underline text-center" href="#" download>
+                            Download GIF File
+                        </a>
+                        <p class="text-xs text-gray-500 mt-2">Right-click and Save As... if the direct download fails.</p>
+                    </div>
+                </div>
+                
+                <!-- JSON Metadata -->
+                <div>
+                    <h3 class="text-xl font-medium mb-2 text-gray-800">JSON Entry</h3>
+                    <div class="relative">
+                        <pre id="json-output" class="result-code"></pre>
+                        <button onclick="copyJson()" class="absolute top-2 right-2 bg-gray-500 hover:bg-gray-700 text-white p-2 rounded-full transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+                                <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Copy this and paste it at the end of your `gifs/index.json` file (before the closing `]`).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER / WARNING -->
+        <footer class="mt-10 text-center text-sm text-gray-500">
+            <p>
+                **IMPORTANT NOTE:** This is a client-side tool. It **cannot** automatically commit files to your GitHub repository. You must manually download the generated GIF and paste the JSON snippet into your local files before pushing your changes.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
+

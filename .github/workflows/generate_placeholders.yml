@@ -1,0 +1,62 @@
+name: Generate GIF Placeholders
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'gifs/index.json'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'gifs/index.json'
+
+jobs:
+  validate-and-generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema
+
+      - name: Validate JSON Schema
+        run: |
+          python - << EOF
+          import json
+          import jsonschema
+
+          with open('gif-schema.json', 'r') as schema_file:
+              schema = json.load(schema_file)
+
+          with open('gifs/index.json', 'r') as json_file:
+              data = json.load(json_file)
+
+          try:
+              jsonschema.validate(instance=data, schema=schema)
+              print("JSON validation successful!")
+          except jsonschema.exceptions.ValidationError as e:
+              print(f"JSON validation error: {e}")
+              exit(1)
+          EOF
+
+      - name: Run Placeholder Generation Script
+        id: generate
+        run: |
+          python generate_placeholders.py
+      
+      - name: Commit Placeholder Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: automatically generate missing GIF placeholders"
+          token: ${{ secrets.GITHUB_TOKEN }}

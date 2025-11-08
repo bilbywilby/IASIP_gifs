@@ -154,7 +154,7 @@
                     episode: episodeInput,
                 };
                 
-                const jsonText = JSON.stringify(jsonEntry, null, 2);
+                // Prepend a comma to the JSON string to make it easy to paste into an existing JSON array (gifs/index.json) const jsonText = ',\n' + JSON.stringify(jsonEntry, null, 2);
 
                 // --- 3. Update UI and Provide Download Link ---
                 

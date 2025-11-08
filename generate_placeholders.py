@@ -18,8 +18,15 @@ def generate_gif_placeholders(index_file_path="gifs/index.json", gif_dir="gifs")
 
     # 2. Load the GIF manifest
     try:
+        # NOTE: Your index.json is an array, not an object with a key like 'gifs'
         with open(index_file_path, 'r') as f:
             manifest = json.load(f)
+        
+        # We assume the manifest is a list of entries. If not, this check handles it.
+        if not isinstance(manifest, list):
+             print(f"Error: Expected manifest file at {index_file_path} to be a JSON array ([]).")
+             return
+
         print(f"Loaded {len(manifest)} entries from {index_file_path}")
     except FileNotFoundError:
         print(f"Error: Manifest file not found at {index_file_path}. Please ensure it exists.")
@@ -43,16 +50,17 @@ def generate_gif_placeholders(index_file_path="gifs/index.json", gif_dir="gifs")
         file_path = os.path.join(gif_dir, filename)
 
         if not os.path.exists(file_path):
-            # Create a simple, empty file as a placeholder
+            # *** UPDATED: Create an empty file with the correct .gif extension. ***
             try:
-                # Note: We create a simple .txt file here, which you will replace
-                # with the actual binary .gif file later.
-                with open(file_path + '.txt', 'w') as temp_f:
-                    temp_f.write(f"// Placeholder for the {filename} GIF. Replace this content with the actual binary GIF data.")
-                print(f"Created placeholder: {filename}.txt")
+                # Use 'touch' equivalent (open in 'w' mode and immediately close)
+                # This creates an empty binary file, which is a better placeholder for a GIF.
+                with open(file_path, 'w') as temp_f:
+                    # Write a minimal header if you want, but an empty file is often fine for a placeholder
+                    pass 
+                print(f"Created placeholder: {filename}")
                 created_count += 1
             except Exception as e:
-                print(f"Failed to create file {file_path}.txt: {e}")
+                print(f"Failed to create file {file_path}: {e}")
         else:
             print(f"Skipping: {filename} already exists.")
 

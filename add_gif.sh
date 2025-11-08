@@ -95,3 +95,4 @@ PUBLIC_URL="https://$GITHUB_USER.github.io/$REPO_NAME/gifs/$NAME"
 echo -e "\n------------------------------------------------------------"
 echo "Done. Use this public URL for your signature: $PUBLIC_URL"
 echo "------------------------------------------------------------"
+]

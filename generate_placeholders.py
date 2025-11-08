@@ -18,11 +18,9 @@ def generate_gif_placeholders(index_file_path="gifs/index.json", gif_dir="gifs")
 
     # 2. Load the GIF manifest
     try:
-        # NOTE: Your index.json is an array, not an object with a key like 'gifs'
         with open(index_file_path, 'r') as f:
             manifest = json.load(f)
         
-        # We assume the manifest is a list of entries. If not, this check handles it.
         if not isinstance(manifest, list):
              print(f"Error: Expected manifest file at {index_file_path} to be a JSON array ([]).")
              return
@@ -50,12 +48,10 @@ def generate_gif_placeholders(index_file_path="gifs/index.json", gif_dir="gifs")
         file_path = os.path.join(gif_dir, filename)
 
         if not os.path.exists(file_path):
-            # *** UPDATED: Create an empty file with the correct .gif extension. ***
+            # Create an empty file with the correct .gif extension.
             try:
-                # Use 'touch' equivalent (open in 'w' mode and immediately close)
-                # This creates an empty binary file, which is a better placeholder for a GIF.
-                with open(file_path, 'w') as temp_f:
-                    # Write a minimal header if you want, but an empty file is often fine for a placeholder
+                # 'a' mode creates the file if it doesn't exist and closes it immediately.
+                with open(file_path, 'a') as temp_f:
                     pass 
                 print(f"Created placeholder: {filename}")
                 created_count += 1

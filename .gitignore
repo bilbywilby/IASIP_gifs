@@ -1,0 +1,12 @@
+Standard ignored files
+.DS_Store
+.env
+Build outputs
+/dist
+/build
+/node_modules
+Logs and temporary files
+.log
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*

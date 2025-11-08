@@ -1,0 +1,70 @@
+# .github/workflows/ci.yml
+
+name: CI / Quality Checks
+
+on:
+push:
+branches:
+- main
+pull_request:
+branches:
+- main
+
+jobs:
+build_and_test:
+runs-on: ubuntu-latest
+
+steps:
+- name: Checkout repository
+uses: actions/checkout@v4
+
+- name: Set up Python
+uses: actions/setup-python@v5
+with:
+python-version: '3.x'
+
+- name: Install dependencies
+run: pip install -r requirements.txt black flake8 jsonschema
+
+- name: Run Black code formatter check
+uses: psf/black@stable
+with:
+options: "--check"
+src: "./"
+continue-on-error: true # Allow to proceed to linting
+
+- name: Run Flake8 linting
+run: flake8 . --count --max-complexity=10 --max-line-length=120 --exclude .git,__pycache__,venv
+
+- name: ⚙️ Validate Manifest Schema
+run: python validate_manifest.py
+env:
+# Set the correct path variables if they differ from defaults
+SCHEMA_PATH: gif-schema.json
+DATA_PATH: gifs/index.json
+
+- name: 📁 Check for Manifest/File Consistency
+# This script checks that every file listed in the manifest actually exists in the gifs/ directory.
+run: |
+MANIFEST_PATH="gifs/index.json"
+GIFS_DIR="gifs"
+
+if [ ! -f "$MANIFEST_PATH" ]; then
+echo "Error: Manifest not found."
+exit 1
+fi
+
+MISSING=0
+# Use jq to iterate over filenames in the manifest
+for FILENAME in $(jq -r '.[] | .filename' "$MANIFEST_PATH"); do
+if [ ! -f "$GIFS_DIR/$FILENAME" ]; then
+echo "Consistency Error: Manifest lists '$FILENAME', but file is missing from '$GIFS_DIR/'."
+MISSING=1
+fi
+done
+
+if [ $MISSING -eq 1 ]; then
+echo "Manifest-File Consistency Check Failed. See errors above."
+exit 1
+fi
+echo "Manifest and file system are consistent."

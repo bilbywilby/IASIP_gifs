@@ -2,306 +2,569 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IASIP Signature GIF Library</title>
-  <style>
-    /* CSS Variables */
-    :root{
-      --bg:#fafafa; --card:#fff; --muted:#666; --accent:#0b69ff;
-      --max-width:1100px;
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IASIP Signature GIF Library</title>
+<meta name="description" content="Community-maintained, accessible, and searchable library of GIFs from It's Always Sunny in Philadelphia." />
+<meta property="og:title" content="IASIP Signature GIF Library" />
+<meta property="og:description" content="A searchable collection of GIFs for signatures and personal use." />
+<style>
+:root{
+--bg: #fafafa;
+--card: #fff;
+--muted: #666;
+--accent: #0b69ff;
+--max-width: 1100px;
+}
+body{font-family: system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+background: var(--bg);
+color: #222;
+margin: 0;
+padding: 28px;
+}
+.wrap{max-width: var(--max-width);
+margin: 0 auto;
+}
+header{display: flex;
+flex-wrap: wrap;
+align-items: center;
+gap: 16px;
+margin-bottom: 18px}
+h1{font-size: 1.6rem;
+margin: 0}
+p.lead{margin: 0;
+color: var(--muted)}
+.controls{display: flex;
+gap: 8px;
+margin: 18px 0;
+flex-wrap: wrap}
+input[type="search"]{flex: 1;
+min-width: 220px;
+padding: 10px 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 1rem;
+transition: border-color 0.2s}
+input[type="search"]:focus{border-color: var(--accent);
+outline: none;
+}
+select,button{padding: 10px 12px;
+border-radius: 8px;
+border: 1px solid #ddd;
+background: #fff;
+cursor: pointer;
+transition: background 0.2s, border-color 0.2s}
+button:hover{background: #f0f0f0}
+.info{background: var(--card);
+padding: 12px;
+border-radius: 10px;
+border: 1px solid #eee;
+margin-bottom: 18px}
+.grid{display: grid;
+grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+gap: 14px}
+.card{background: var(--card);
+border: 1px solid #eee;
+padding: 10px;
+border-radius: 10px;
+display: flex;
+flex-direction: column;
+gap: 8px;
+align-items: stretch;
+cursor: pointer;
+transi  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "IASIP Signature GIF Library",
+          "url": "https://[YourUsername].github.io/[YourRepoName]/",
+          "description": "The definitive source repository for the finest reaction GIFs from It's Always Sunny in Philadelphia, hosted via GitHub Pages.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://[YourUsername].github.io/[YourRepoName]/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "CollectionPage",
+          "@id": "https://[YourUsername].github.io/[YourRepoName]/index.html",
+          "url": "https://[YourUsername].github.io/[YourRepoName]/index.html",
+          "name": "IASIP Signature GIF Library: Searchable Collection",
+          "about": {
+            "@type": "TelevisionSeries",
+            "name": "It's Always Sunny in Philadelphia"
+          },
+          "mainEntity": {
+            "@type": "ItemList",
+            "description": "List of GIFs available in the IASIP collection.",
+            "numberOfItems": 0, /* This should be dynamically updated or set to 0 */
+            "itemListElement": []
+          }
+        }
+      ]
     }
-    /* Base Styles */
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#222; margin:0; padding:28px;}
-    .wrap{max-width:var(--max-width); margin:0 auto;}
-    /* Header & Lead */
-    header{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-bottom:18px}
-    h1{font-size:1.6rem;margin:0} /* Increased font size */
-    p.lead{margin:0;color:var(--muted)}
-    /* Controls/Inputs */
-    .controls{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
-    input[type="search"]{flex:1;min-width:220px;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:1rem;transition:border-color 0.2s}
-    input[type="search"]:focus{border-color:var(--accent);outline:none;}
-    select,button{padding:10px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;transition:background 0.2s, border-color 0.2s}
-    button:hover{background:#f0f0f0}
-    /* Info/Usage Box */
-    .info{background:var(--card);padding:12px;border-radius:10px;border:1px solid #eee;margin-bottom:18px}
-    /* GIF Grid */
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-    /* Card */
-    .card{background:var(--card);border:1px solid #eee;padding:10px;border-radius:10px;display:flex;flex-direction:column;gap:8px;align-items:stretch;cursor:pointer;transition:box-shadow 0.2s, border-color 0.2s}
-    .card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.05); border-color:#ccc;}
-    .card:focus{outline:2px solid var(--accent);outline-offset:2px;}
-    .thumb{width:100%;height:140px;background:#222;border-radius:8px;object-fit:cover}
-    .meta{display:flex;justify-content:space-between;align-items:center;gap:8px}
-    .title{font-weight:600;font-size:1rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* Increased font size */
-    .desc{font-size:0.85rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} /* New style for description */
-    .tags{font-size:0.82rem;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap}
-    .tag{background:#f1f5ff;color:#03386a;padding:4px 8px;border-radius:999px;font-size:0.75rem;white-space:nowrap;}
-    .actions{display:flex;gap:8px}
-    /* Action Buttons */
-    .action-btn{font-size:0.85rem;padding:6px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;transition:background 0.2s}
-    .action-btn:hover{background:#e8e8e8;}
-    .copy-btn{background:var(--accent);color:#fff;border-color:var(--accent);}
-    .copy-btn:hover{background:#0a5cd6;}
-    .download-link{text-decoration:none; color:#111; display:inline-block; line-height:1;}
-    .url-display{font-size:0.8rem;color:var(--muted);word-break:break-all}
-    .hidden{display:none}
-    footer{margin-top:28px;color:var(--muted);font-size:0.9rem}
-    /* Media Queries */
-    @media (max-width:520px){ .thumb{height:110px} header{gap:8px} .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))} .action-btn{font-size:0.75rem;padding:5px 8px;} h1{font-size:1.4rem;} }
-  </style>
+  </script>
+</head>
+tion: box-shadow 0.2s, border-color 0.2s}
+.card:hover{box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+border-color: #ccc;
+}
+.card:focus{outline: 2px solid var(--accent);
+outline-offset: 2px;
+}
+
+/* Thumbnails for Lazy Loading */
+.thumb{width: 100%;
+height: 140px;
+background-color: #222;
+border-radius: 8px;
+object-fit: cover;
+transition: opacity 0.5s;
+}
+.thumb.loading{opacity: 0.6;
+filter: blur(2px);
+} /* Visual hint for lazy loading */
+.thumb-wrap{position: relative;
+width: 100%;
+height: 140px;
+border-radius: 8px;
+background-color: #222;
+}
+
+.meta{display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 8px}
+.title{font-weight: 600;
+font-size: 1rem;
+margin: 0;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap}
+.desc{font-size: 0.85rem;
+color: var(--muted);
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.tags{font-size: 0.82rem;
+color: var(--muted);
+margin-top: 4px;
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+align-items: center;
+}
+
+/* Tag Chip Style for Filter Section */
+.tag-chip-btn {
+background: #f1f5ff;
+color: #03386a;
+padding: 4px 10px;
+border-radius: 999px;
+font-size: 0.75rem;
+border: 1px solid #d0e0ff;
+cursor: pointer;
+white-space: nowrap;
+line-height: 1.2;
+}
+.tag-chip-btn:hover { background: #d0e0ff;
+}
+.tag-chip-btn.active { background: var(--accent);
+color: #fff;
+border-color: var(--accent);
+}
+
+.actions{display: flex;
+gap: 8px}
+.action-btn{font-size: 0.85rem;
+padding: 6px 10px;
+border-radius: 6px;
+border: 1px solid #ddd;
+background: #fff;
+cursor: pointer;
+transition: background 0.2s}
+.url-display{font-size: 0.8rem;
+color: var(--muted);
+word-break: break-all}
+.hidden{display: none}
+footer{margin-top: 28px;
+color: var(--muted);
+font-size: 0.9rem}
+
+/* Error State */
+.error { color: #d00;
+font-weight: 600;
+padding: 20px;
+text-align: center;
+}
+
+@media (max-width:520px){
+.thumb, .thumb-wrap{height: 110px}
+header{gap: 8px}
+.grid{grid-template-columns: repeat(auto-fill,minmax(150px,1fr))}
+.action-btn{font-size: 0.75rem;
+padding: 5px 8px;
+}
+h1{font-size: 1.4rem;
+}
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>☀️ It's Always Sunny — GIF Library</h1>
-        <p class="lead" id="gifCount"></p>
-      </div>
-    </header>
+<div class="wrap">
+<header>
+<div>
+<h1>☀️ It's Always Sunny — GIF Library</h1>
+<p class="lead" id="gifCount">
+Loading manifest...
+</p>
+</div>
 
-    <div class="info" role="region" aria-label="Usage">
-      <strong>Access format:</strong>
-      <div class="url-display" id="urlFormat">Loading URL format...</div>
-      <div style="margin-top:8px;color:var(--muted)">Tip: **Click a GIF card** to copy its public URL to the clipboard.</div>
-    </div>
+</header>
 
-    <div class="controls" role="search" aria-label="Search and filter">
-      <input id="q" type="search" placeholder="Search filename, tags, or description..." aria-label="Search gifs">
-      <select id="tagFilter" aria-label="Filter by tag">
-        <option value="">— Filter by tag —</option>
-      </select>
-      <button id="clear">Clear Filters</button>
-    </div>
+<div class="info" role="region" aria-label="Usage">
+<strong>Access format:</strong>
+<div class="url-display" id="urlFormat">
+https://[YourUsername].github.io/[YourRepoName]/gifs/[YourGifName.gif]
+</div>
+<div style="margin-top:8px;color:var(--muted)">
+Tip: **Click a GIF card** to copy its public URL to the clipboard.
+</div>
+</div>
 
-    <main>
-      <section id="results" class="grid" aria-live="polite"></section>
-      <div id="empty" class="info hidden">**No GIFs found.** Try clearing filters or check `gifs/index.json`.</div>
-    </main>
+<div class="controls" role="search" aria-label="Search and filter">
+<input id="q" type="search" placeholder="Search filename, tags, or description..." aria-label="Search gifs">
+<select id="tagFilter" aria-label="Filter by tag" class="hidden">
+<option value="">— Filter by tag —</option>
+</select>
+<button id="clear">Clear Filters</button>
+</div>
 
-    <footer>
-      <div>Repository: <a href="README.md">README.md</a> · Manifest: <a href="gifs/index.json">gifs/index.json</a></div>
-      <div style="margin-top:6px">Maintainers: automatic placeholder generation and schema validation keep the repo healthy.</div>
-    </footer>
-  </div>
+<div id="tagChips" class="tags" role="toolbar" aria-label="Filter by tag chips" style="margin: 0 0 18px 0;"></div>
 
-  <script>
-    const INDEX_PATH = 'gifs/index.json';
-    const q = document.getElementById('q');
-    const results = document.getElementById('results');
-    const tagFilter = document.getElementById('tagFilter');
-    const empty = document.getElementById('empty');
-    const clearBtn = document.getElementById('clear');
-    const urlFormat = document.getElementById('urlFormat');
-    const gifCountDisplay = document.getElementById('gifCount');
-    
-    let gifs = [];
-    let allTags = new Set();
-    let siteBaseUrl = '';
+<main>
+<section id="results" class="grid" aria-live="polite">
+<div class="info">
+Loading GIFs...
+</div>
+</section>
+<div id="empty" class="info hidden">
+**No GIFs found.** Try clearing filters or check <code>gifs/index.json</code>.
+</div>
+</main>
 
-    // --- Utility Functions ---
+<footer>
+<div>
+Repository: <a href="README.md">README.md</a> · Manifest: <a href="gifs/index.json">gifs/index.json</a>
+</div>
+<div style="margin-top:6px">
+Maintainers: automatic placeholder generation and schema validation keep the repo healthy.
+</div>
+</footer>
+</div>
 
-    /**
-     * Infers the base URL for the hosted GIFs.
-     * Assumes a structure like: https://<user>.github.io/<repo>/gifs/<file>
-     */
-    function determineBaseUrl() {
-        const origin = window.location.origin;
-        const pathname = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
-        
-        // Find the base path (e.g., '/IASIP-Signature-Gifs')
-        // For project pages, pathname is usually '/<repo>'
-        // For user/org pages, pathname is usually '/'
-        const segments = pathname.split('/').filter(s => s.length > 0);
-        let repoPath = '';
+<script>
+const INDEX_PATH = 'gifs/index.json';
+const q = document.getElementById('q');
+const results = document.getElementById('results');
+const tagFilter = document.getElementById('tagFilter');
+const tagChipsContainer = document.getElementById('tagChips');
+const empty = document.getElementById('empty');
+const clearBtn = document.getElementById('clear');
+const urlFormat = document.getElementById('urlFormat');
+const gifCountDisplay = document.getElementById('gifCount');
 
-        if (segments.length > 0) {
-            // Assume the last segment is the repo name if we're not at the root
-            repoPath = `/${segments[0]}`; // Keep only the first path segment (the repo name)
-        }
-        
-        // This format works for both project and user/org pages:
-        // 'https://<origin>/<repo-or-empty>/gifs/'
-        siteBaseUrl = `${origin}${repoPath}/gifs/`;
-        // Replace potential double slashes, e.g., 'https://user.github.io//gifs/' -> 'https://user.github.io/gifs/'
-        siteBaseUrl = siteBaseUrl.replace(/\/\/gifs\//, '/gifs/');
+let gifs = [];
+let allTags = new Set();
+let siteBaseUrl = '';
+let currentTagFilter = ''; // State for tag chip filter
 
-        urlFormat.textContent = siteBaseUrl + '[YourGifName.gif]';
-    }
+// --- Utility Functions ---
+
+function determineBaseUrl() {
+// Tries to infer GitHub Pages base URL (e.g., handles /<repo>/ or /)
+const origin = window.location.origin;
+const pathname = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
+const segments = pathname.split('/').filter(s => s.length > 0);
+
+let repoPath = '';
+if (segments.length > 0) {
+repoPath = `/${segments[0]}`;
+}
+
+siteBaseUrl = `${origin}${repoPath}/gifs/`;
+siteBaseUrl = siteBaseUrl.replace(/\/\/gifs\//, '/gifs/');
+
+urlFormat.textContent = siteBaseUrl + '[YourGifName.gif]';
+}
+
+function formatPublicUrl(filename) {
+return siteBaseUrl + filename;
+}
+
+// --- Performance/Lazy Loading ---
+
+const lazyObserver = new IntersectionObserver((entries, observer) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+const img = entry.target;
+const gifSrc = img.dataset.gifSrc;
+
+if (gifSrc) {
+img.src = gifSrc;
+img.onload = () => { img.classList.remove('loading'); };
+img.removeAttribute('data-gif-src');
+}
+observer.unobserve(img);
+}
+});
+}, { rootMargin: '200px 0px' });
+
+function setupLazyLoading() {
+document.querySelectorAll('img[data-gif-src]').forEach(img => {
+lazyObserver.observe(img);
+});
+}
+
+// --- UI/Rendering Functions ---
+
+function makeCard(entry) {
+const file = entry.filename;
+const url = formatPublicUrl(file);
+// Assuming you might introduce a placeholder field later
+const placeholderSrc = entry.placeholder || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+
+const card = document.createElement('article');
+card.className = 'card gif-card';
+card.tabIndex = 0;
+card.setAttribute('role', 'article');
+card.setAttribute('aria-label', `${entry.description || file}. Click to copy URL.`);
+card.dataset.tags = (entry.tags || []).join(' '); // Store tags for client-side filtering
+
+const img = document.createElement('img');
+img.className = 'thumb loading'; // Start in loading state
+img.src = placeholderSrc; // Low-res placeholder or minimal GIF
+img.dataset.gifSrc = url; // Store real GIF URL
+img.alt = entry.description || file;
+img.loading = 'lazy'; // Browser native lazy loading fallback
+// Minimal valid 1x1 transparent GIF on hard error
+img.onerror = () => { img.style.background = '#900'; img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='; };
+
+const imgWrap = document.createElement('div');
+imgWrap.className = 'thumb-wrap';
+imgWrap.appendChild(img);
+
+const title = document.createElement('div');
+title.className = 'title';
+title.textContent = file;
+
+const desc = document.createElement('div');
+desc.className = 'desc';
+desc.textContent = entry.description || '';
+
+const tagsWrap = document.createElement('div');
+tagsWrap.className = 'tags';
+(entry.tags || []).slice(0, 6).forEach(t => {
+const s = document.createElement('span');
+s.className = 'tag';
+s.textContent = t;
+tagsWrap.appendChild(s);
+});
+
+// Copy button in the action area
+const copyBtn = document.createElement('button');
+copyBtn.textContent = 'Copy URL';
+copyBtn.className = 'action-btn copy-btn';
+copyBtn.onclick = (e) => {
+e.stopPropagation();
+copyUrlToClipboard(url, copyBtn);
+};
+
+const dl = document.createElement('a');
+dl.textContent = 'Download';
+dl.href = url;
+dl.setAttribute('download', file);
+dl.className = 'download-link action-btn';
+
+const actions = document.createElement('div');
+actions.className = 'actions';
+actions.append(copyBtn, dl);
+
+const meta = document.createElement('div');
+meta.className = 'meta';
+meta.append(actions);
+
+const infoWrap = document.createElement('div');
+infoWrap.append(title, desc);
+
+card.append(imgWrap, infoWrap, tagsWrap, meta);
+
+// Card click handler (copies URL)
+card.addEventListener('click', () => {
+copyUrlToClipboard(url, copyBtn);
+});
+
+return card;
+}
+
+function copyUrlToClipboard(url, button) {
+navigator.clipboard.writeText(url).then(()=> {
+button.textContent = 'Copied!';
+setTimeout(()=>button.textContent = 'Copy URL', 1200);
+}).catch(() => {
+// Optional: fallback for browsers without clipboard access
+button.textContent = 'Failed!';
+setTimeout(()=>button.textContent = 'Copy URL', 1200);
+});
+}
+
+function render(list) {
+results.innerHTML = '';
+gifCountDisplay.textContent = `Community-maintained signature GIFs. Showing ${list.length} of ${gifs.length} total.`;
+if (!list.length) {
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+const frag = document.createDocumentFragment();
+list.forEach(e => frag.appendChild(makeCard(e)));
+results.appendChild(frag);
+setupLazyLoading(); // Initialize IntersectionObserver after rendering
+}
+
+function buildTagChips(tagCounts) {
+tagChipsContainer.innerHTML = ''; // Clear existing chips
+const tags = Object.keys(tagCounts).sort();
+
+tags.forEach(tag => {
+const btn = document.createElement('button');
+btn.textContent = `${tag} (${tagCounts[tag]})`;
+btn.className = 'tag-chip-btn';
+btn.setAttribute('role', 'option');
+btn.setAttribute('aria-selected', 'false');
+
+if (currentTagFilter === tag) {
+btn.classList.add('active');
+btn.setAttribute('aria-selected', 'true');
+}
+
+btn.onclick = () => {
+const newTag = (currentTagFilter === tag) ? '': tag;
+updateTagFilter(newTag);
+};
+tagChipsContainer.appendChild(btn);
+});
+}
+
+function updateTagFilter(tag) {
+currentTagFilter = tag;
+
+// Update URL Hash for permalink
+const hash = tag ? `#tag=${encodeURIComponent(tag)}`: '';
+history.replaceState(null, '', hash);
+
+applyFilters();
+}
+
+// --- Filtering/Event Handlers ---
+
+function applyFilters() {
+const qv = q.value.trim().toLowerCase();
+
+// Ensure UI matches current filter state
+document.querySelectorAll('.tag-chip-btn').forEach(btn => {
+const tag = btn.textContent.split(' (')[0];
+if (tag === currentTagFilter) {
+btn.classList.add('active');
+btn.setAttribute('aria-selected', 'true');
+} else {
+btn.classList.remove('active');
+btn.setAttribute('aria-selected', 'false');
+}
+});
+
+let out = gifs.filter(g => {
+const combinedText = (g.filename + ' ' + (g.tags || []).join(' ') + ' ' + (g.description || '')).toLowerCase();
+
+// Tag chip filter
+if (currentTagFilter && !(g.tags || []).includes(currentTagFilter)) return false;
+
+// Search query filter
+if (!qv) return true;
+return combinedText.includes(qv);
+});
+
+render(out);
+}
+
+function clearFilters() {
+q.value = '';
+updateTagFilter('');
+}
+
+function parseUrlHash() {
+const hash = window.location.hash.substring(1);
+if (hash.startsWith('tag=')) {
+const tag = decodeURIComponent(hash.substring(4));
+// Only set if the tag exists in the manifest
+if (allTags.has(tag)) {
+currentTagFilter = tag;
+}
+}
+}
 
 
-    function formatPublicUrl(filename) {
-        return siteBaseUrl + filename;
-    }
+// --- Initialization ---
 
-    // --- UI/Rendering Functions ---
+async function init() {
+determineBaseUrl();
 
-    function makeCard(entry) {
-        const file = entry.filename;
-        const url = formatPublicUrl(file);
+try {
+const response = await fetch(INDEX_PATH);
+if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.tabIndex = 0;
-        card.setAttribute('role', 'article');
-        card.setAttribute('aria-label', `${entry.description || file}. Click to copy URL.`);
+gifs = await response.json();
+if (!Array.isArray(gifs)) throw new Error('Manifest is not a valid JSON array.');
 
-        const img = document.createElement('img');
-        img.className = 'thumb';
-        img.src = url;
-        img.alt = entry.description || file;
-        img.loading = 'lazy';
-        // Placeholder/Error handling: minimal valid 1x1 transparent GIF
-        img.onerror = () => { img.style.background='#900'; img.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='; };
+// Collect all unique tags and counts
+const tagCounts = {};
+gifs.forEach(g => (g.tags || []).forEach(t => {
+allTags.add(t);
+tagCounts[t] = (tagCounts[t] || 0) + 1;
+}));
 
-        const title = document.createElement('div');
-        title.className = 'title';
-        title.textContent = file;
+parseUrlHash(); // Check for permalink filter
+buildTagChips(tagCounts);
+applyFilters(); // Initial render and filter application
 
-        const desc = document.createElement('div');
-        desc.className = 'desc';
-        desc.textContent = entry.description || '';
-        
-        const tagsWrap = document.createElement('div');
-        tagsWrap.className = 'tags';
-        // Add tags to card's dataset for filtering
-        card.dataset.tags = (entry.tags || []).join(' ');
-        
-        (entry.tags || []).slice(0, 6).forEach(t => {
-            const s = document.createElement('span');
-            s.className = 'tag';
-            s.textContent = t;
-            tagsWrap.appendChild(s);
-        });
+} catch (error) {
+console.error('Error fetching or processing manifest:', error);
+const errorHtml = `
+<div class="error">
+<strong>Manifest Load Failed:</strong> Could not load GIF manifest (<code>gifs/index.json</code>).
+<p>${error.message}</p>
+<button id="retryBtn" class="action-btn" style="margin-top:10px;">Retry</button>
+</div>`;
+results.innerHTML = errorHtml;
+document.getElementById('retryBtn').onclick = () => location.reload();
+gifCountDisplay.textContent = 'Failed to load library.';
+}
+}
 
-        // Copy button in the action area
-        const copyBtn = document.createElement('button');
-        copyBtn.textContent = 'Copy URL';
-        copyBtn.className = 'action-btn copy-btn';
-        copyBtn.onclick = (e) => {
-            e.stopPropagation(); // Prevent card click event
-            navigator.clipboard.writeText(url).then(()=> {
-                copyBtn.textContent='Copied!';
-                setTimeout(()=>copyBtn.textContent='Copy URL',1200);
-            }).catch(() => {
-                copyBtn.textContent='Failed!';
-                setTimeout(()=>copyBtn.textContent='Copy URL',1200);
-            });
-        };
+// Wire events
+q.addEventListener('input', applyFilters);
+clearBtn.addEventListener('click', clearFilters);
+window.addEventListener('hashchange', () => {
+// Handle back/forward navigation affecting the URL hash
+parseUrlHash();
+applyFilters();
+});
 
-        const dl = document.createElement('a');
-        dl.textContent = 'Download';
-        dl.href = url;
-        dl.setAttribute('download', file);
-        dl.className = 'download-link action-btn';
+// Start the process
+init();
 
-        const actions = document.createElement('div');
-        actions.className = 'actions';
-        actions.append(copyBtn, dl);
-
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-        meta.append(actions); // Only actions in meta for cleaner layout
-
-        const infoWrap = document.createElement('div');
-        infoWrap.append(title, desc); // Group title and description
-
-        card.append(img, infoWrap, tagsWrap, meta);
-
-        // Card click handler (copies URL)
-        card.addEventListener('click', () => {
-            navigator.clipboard.writeText(url).then(()=> {
-                copyBtn.textContent='Copied!';
-                setTimeout(()=>copyBtn.textContent='Copy URL',1200);
-            });
-        });
-
-        return card;
-    }
-
-    function render(list) {
-        results.innerHTML = '';
-        gifCountDisplay.textContent = `Community-maintained signature GIFs. Showing ${list.length} of ${gifs.length} total.`;
-        if (!list.length) { 
-            empty.classList.remove('hidden'); 
-            return; 
-        }
-        empty.classList.add('hidden');
-        const frag = document.createDocumentFragment();
-        list.forEach(e => frag.appendChild(makeCard(e)));
-        results.appendChild(frag);
-    }
-
-    function buildTagFilter() {
-        // Populate select with unique, sorted tags
-        const tags = Array.from(allTags).sort();
-        tagFilter.innerHTML = '<option value="">— Filter by tag —</option>'; // Clear existing
-        tags.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t;
-            opt.textContent = t;
-            tagFilter.appendChild(opt);
-        });
-    }
-
-    // --- Filtering/Event Handlers ---
-
-    function applyFilters() {
-        const qv = q.value.trim().toLowerCase();
-        const tag = tagFilter.value;
-        
-        let out = gifs.filter(g => {
-            // Combine fields for search: filename, tags, description
-            const combinedText = (g.filename + ' ' + (g.tags || []).join(' ') + ' ' + (g.description || '')).toLowerCase();
-            
-            // Tag filter
-            if (tag && !(g.tags || []).includes(tag)) return false;
-            
-            // Search query filter
-            if (!qv) return true;
-            return combinedText.includes(qv);
-        });
-        
-        render(out);
-    }
-
-    function clearFilters() {
-        q.value = ''; 
-        tagFilter.value = '';
-        applyFilters();
-    }
-
-    // --- Initialization ---
-
-    async function init() {
-        determineBaseUrl(); // Set up base URL before fetching
-        
-        try {
-            const response = await fetch(INDEX_PATH);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            gifs = await response.json();
-
-            // Collect all unique tags
-            gifs.forEach(g => (g.tags || []).forEach(t => allTags.add(t)));
-
-            buildTagFilter();
-            applyFilters(); // Initial render
-
-        } catch (error) {
-            console.error('Error fetching or processing manifest:', error);
-            results.innerHTML = '<div class="info">Failed to load GIF manifest. Please check the console for details.</div>';
-            gifCountDisplay.textContent = 'Community-maintained signature GIFs.';
-        }
-    }
-
-    // Wire events
-    q.addEventListener('input', applyFilters);
-    tagFilter.addEventListener('change', applyFilters);
-    clearBtn.addEventListener('click', clearFilters);
-    
-    // Start the process
-    init();
-
-  </script>
+</script>
 </body>
 </html>

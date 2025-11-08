@@ -1,8 +1,45 @@
+# .pre-commit-config.yaml
 repos:
+  # Python Code Formatting and Linting
+  - repo: https://github.com/psf/black
+    rev: 24.3.0
+    hooks:
+      - id: black
+        # Only run on Python files
+        files: \.py$
+  
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        # Only run on Python files
+        files: \.py$
+
+  # General Hooks for code sanity
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files # Catches large files before commit
+        args: ['--maxkb=1024'] # Example max size: 1MB
+
+  # Local Custom Hooks
   - repo: local
     hooks:
+      # Hook to ensure the manifest adheres to the JSON schema
       - id: check-manifest-schema
         name: Validate gifs/index.json Schema
         entry: python validate_manifest.py
         language: system
         files: ^gifs/index\.json$
+        pass_filenames: false # The script handles file paths internally
+        
+      # Hook to ensure all listed GIF files exist (optional: add --touch if you want to create them)
+      - id: generate-placeholders
+        name: Generate Missing GIF Placeholders (Touch)
+        entry: python generate_placeholders.py --touch
+        language: system
+        files: ^gifs/index\.json$
+        pass_filenames: false # The script handles file paths internally

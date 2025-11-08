@@ -87,6 +87,10 @@ git commit -m "Add $NAME" || {
 }
 git push origin "$BRANCH"
 
+# Use `printf %s "$NAME" | xxd -p | tr -d '\n' | sed 's/\(..\)/%\1/g'` for URL encoding if desired,
+# but for simple filenames as recommended, this simple concatenation is usually fine.
+
+# For robustness, we are keeping your original, simple URL generation.
 PUBLIC_URL="https://$GITHUB_USER.github.io/$REPO_NAME/gifs/$NAME"
 echo -e "\n------------------------------------------------------------"
 echo "Done. Use this public URL for your signature: $PUBLIC_URL"

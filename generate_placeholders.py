@@ -1,71 +1,54 @@
+#!/usr/bin/env python3
 import os
 import json
+from pathlib import Path
 
-def generate_gif_placeholders(index_file_path="gifs/index.json", gif_dir="gifs"):
-    """
-    Reads the index.json file and creates empty placeholder files
-    for each GIF listed in the manifest.
-    """
-    print(f"--- Starting GIF Placeholder Generation ---")
+INDEX_PATH = "gifs/index.json"
+GIF_DIR = "gifs"
+# Minimal valid 1x1 transparent GIF (GIF89a)
+MINIMAL_GIF = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
 
-    # 1. Ensure the GIFs directory exists
-    if not os.path.exists(gif_dir):
-        os.makedirs(gif_dir)
-        print(f"Created directory: {gif_dir}/")
-    else:
-        print(f"Directory already exists: {gif_dir}/")
+def generate_gif_placeholders(index_file_path=INDEX_PATH, gif_dir=GIF_DIR, write_minimal=True):
+    print("--- Starting GIF Placeholder Generation ---")
+    os.makedirs(gif_dir, exist_ok=True)
 
-
-    # 2. Load the GIF manifest
     try:
-        with open(index_file_path, 'r') as f:
+        with open(index_file_path, 'r', encoding='utf-8') as f:
             manifest = json.load(f)
-        
-        # We assume the manifest is a list of entries. If not, this check handles it.
         if not isinstance(manifest, list):
-             print(f"Error: Expected manifest file at {index_file_path} to be a JSON array ([]).")
-             return
-
-        print(f"Loaded {len(manifest)} entries from {index_file_path}")
+            print(f"Error: Expected JSON array in {index_file_path}")
+            return 0
     except FileNotFoundError:
-        print(f"Error: Manifest file not found at {index_file_path}. Please ensure it exists.")
-        return
-    except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from {index_file_path}. Check for syntax errors.")
-        return
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return
+        print(f"Error: Manifest not found at {index_file_path}")
+        return 0
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in {index_file_path}: {e}")
+        return 0
 
-
-    # 3. Create the placeholder files
-    created_count = 0
+    created = 0
     for entry in manifest:
         filename = entry.get("filename")
         if not filename:
-            print(f"Warning: Entry missing 'filename' key. Skipping.")
+            print("Warning: entry missing 'filename'; skipping.")
             continue
+        path = Path(gif_dir) / filename
+        if path.exists():
+            print(f"Skipping (exists): {filename}")
+            continue
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if write_minimal:
+                with open(path, 'wb') as out:
+                    out.write(MINIMAL_GIF)
+            else:
+                path.touch(exist_ok=True)
+            created += 1
+            print(f"Created placeholder: {filename}")
+        except Exception as e:
+            print(f"Failed to create {filename}: {e}")
 
-        # The path should use the actual .gif filename
-        file_path = os.path.join(gif_dir, filename)
-
-        if not os.path.exists(file_path):
-            # *** FIX: Create an empty file with the correct .gif extension. ***
-            try:
-                # 'a' mode creates the file if it doesn't exist and closes it immediately, 
-                # effectively creating an empty binary file.
-                with open(file_path, 'a') as temp_f:
-                    pass 
-                print(f"Created placeholder: {filename}")
-                created_count += 1
-            except Exception as e:
-                print(f"Failed to create file {file_path}: {e}")
-        else:
-            print(f"Skipping: {filename} already exists.")
-
-    print(f"\nSuccessfully created {created_count} placeholder files.")
-    print(f"--- Finished Generation ---")
-
+    print(f"Finished: created {created} placeholder(s).")
+    return created
 
 if __name__ == "__main__":
     generate_gif_placeholders()

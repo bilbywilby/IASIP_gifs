@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-manifest-schema
+        name: Validate gifs/index.json Schema
+        entry: python validate_manifest.py
+        language: system
+        files: ^gifs/index\.json$

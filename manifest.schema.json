@@ -1,37 +1,21 @@
-[
 {
-"filename": "dennis-glare.gif",
-"description": "The perfect, intense, golden god glare of pure contempt.",
-"characters": ["Dennis"],
-"tags": ["anger", "contempt", "psychotic", "stare"],
-"episode": "S07E01 - Frank's Pretty Woman"
-},
-{
-"filename": "mac-mass.gif",
-"description": "Mac flexing his powerful, cultivated mass.",
-"characters": ["Mac"],
-"tags": ["flex", "mass", "body", "gym"],
-"episode": "S07E05 - The High School Reunion Part 2: The Gang's Revenge"
-},
-{
-"filename": "charlie-mail.gif",
-"description": "Charlie explaining the process of getting the mail.",
-"characters": ["Charlie"],
-"tags": ["confused", "explain", "conspiracy", "mail"],
-"episode": "S04E10 - Sweet Dee Has a Heart Attack"
-},
-{
-"filename": "dee-squawk.gif",
-"description": "Dee making a characteristic bird-like sound.",
-"characters": ["Dee"],
-"tags": ["bird", "squawk", "scream", "annoyed"],
-"episode": "S06E13 - A Very Sunny Christmas"
-},
-{
-"filename": "frank-toilet.gif",
-"description": "Frank emerging from a couch or tight space.",
-"characters": ["Frank"],
-"tags": ["surprise", "gross", "emerge", "waking up"],
-"episode": "S02E01 - Charlie Gets Molested"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["filename", "tags", "description"],
+    "properties": {
+      "filename": {
+        "type": "string",
+        "pattern": "^[a-z0-9\\-]+\\.gif$"
+      },
+      "tags": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "description": { "type": "string", "minLength": 10, "maxLength": 200 }
+    },
+    "additionalProperties": false
+  }
 }
-]

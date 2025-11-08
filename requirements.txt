@@ -1,1 +1,7 @@
+# requirements.txt
 jsonschema
+requests
+# Optionally, add libraries for advanced image processing if you plan to
+# enforce optimization directly in Python (e.g., Pillow, imageio)
+# pillow
+
